@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ art.title }} · ArtBuff{% endblock %}
+{% block content %}
+<div class="detail">
+  <div>
+    <div class="stage" id="stage" style="--stage-bg: {{ bg }}" data-initial="{{ initial }}">
+      <div class="aperture" id="aperture"><img id="art" src="/img/{{ art.source }}/{{ art.id }}" alt="{{ art.title }}" draggable="false"></div>
+      <img class="frame-overlay" id="frame-overlay" alt="" draggable="false">
+    </div>
+    <div class="editor">
+      <div class="frame-picker" id="frame-picker">
+        {% for fid, f in frames.items() %}
+        <button type="button" class="chip" data-frame="{{ fid }}" title="{{ f.label }}">
+          <span class="chip-art" style="--stage-bg: {{ bg }}; background-image:url('/img/{{ art.source }}/{{ art.id }}')"><img src="/frames/{{ fid }}.png?w=240" alt="" draggable="false"></span>
+          <span>{{ f.label }}</span>
+        </button>
+        {% endfor %}
+      </div>
+      <div class="zoom-row">
+        <label>Zoom <input type="range" id="zoom" min="0" max="1000" value="0"></label>
+        <button type="button" id="zoom-fit">Fit</button>
+        <button type="button" id="zoom-fill">Fill</button>
+      </div>
+      <p class="muted">Drag the artwork to reposition it behind the frame. Scroll or use the slider to zoom.</p>
+    </div>
+    <script type="application/json" id="frames-data">{{ frames|tojson }}</script>
+  </div>
+  <div class="info">
+    <h1>{{ art.title }}</h1>
+    <p>{{ art.artist }}</p>
+    {% if art.date %}<p class="muted">{{ art.date }}</p>{% endif %}
+    {% if art.medium %}<p class="muted">{{ art.medium }}</p>{% endif %}
+    <div class="actions">
+      <button class="primary" id="display-btn" data-display="{{ art.source }}/{{ art.id }}">Display on TV</button>
+      <button data-fav="{{ art.source }}/{{ art.id }}">{{ '★ Favorited' if fav else '☆ Favorite' }}</button>
+    </div>
+    {% if related %}
+    <div class="explore">
+      <h2>Explore more</h2>
+      <div class="pills">
+        {% for r in related %}<a class="pill {{ 'tag' if r.kind == 'tag' }}" href="/?source={{ art.source }}&{{ r.params|urlencode }}">{{ r.label }}</a>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% if art.page_url %}<p><a href="{{ art.page_url }}" target="_blank" rel="noopener">View at the museum ↗</a></p>{% endif %}
+  </div>
+</div>
+{% endblock %}

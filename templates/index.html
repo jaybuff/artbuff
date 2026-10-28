@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<form class="search" id="search-form" action="/" method="get">
+  {% if providers|length > 1 %}
+  <select name="source">{% for p in providers %}<option value="{{ p.name }}" {{ 'selected' if p.name == source }}>{{ p.label }}</option>{% endfor %}</select>
+  {% else %}<input type="hidden" name="source" value="{{ source }}">{% endif %}
+  <input type="search" name="q" value="{{ q }}" placeholder="Search the collection (van gogh, ukiyo-e, seascape…)" autofocus>
+  <input type="hidden" name="shuffle" value="">
+  {% if disc %}<input type="hidden" name="tags" value="{{ flt.tags }}"><input type="hidden" name="artist" value="{{ flt.artist }}">{% endif %}
+  <button>Search</button>
+  <button type="button" id="shuffle-btn" title="Random pieces from these results">🎲 Shuffle</button>
+</form>
+
+{% if disc %}
+<div class="discover">
+  <div class="drow"><span class="dlabel">Start here</span>
+    {% for p in disc.presets %}<a class="pill" href="/?source={{ source }}&{{ p.params|urlencode }}">{{ p.label }}</a>{% endfor %}
+  </div>
+  <div class="drow">
+    <label class="dlabel" for="dept">Department</label>
+    <select id="dept" name="dept" form="search-form">
+      <option value="">All departments</option>
+      {% for d in disc.departments %}<option value="{{ d.id }}" {{ 'selected' if flt.dept == d.id|string }}>{{ d.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="drow">
+    <span class="dlabel">Era</span>
+    <input type="number" class="year" name="from" form="search-form" placeholder="from" value="{{ flt['from'] }}" aria-label="From year">
+    <span>–</span>
+    <input type="number" class="year" name="to" form="search-form" placeholder="to" value="{{ flt.to }}" aria-label="To year">
+    {% for e in disc.eras %}<button type="button" class="pill era" data-from="{{ e.from }}" data-to="{{ e.to }}">{{ e.label }}</button>{% endfor %}
+    {% if flt.dept or flt['from'] or flt.to %}<a class="pill" href="/?source={{ source }}&q={{ q|urlencode }}">Clear flt</a>{% endif %}
+  </div>
+  <div class="drow"><label class="dlabel"><input type="checkbox" name="all" value="1" form="search-form" {{ 'checked' if flt.all }}> Include non-highlights <span class="muted">(without a search term, only the Met's highlights are shown)</span></label></div>
+</div>
+{% endif %}
+
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+<p class="muted">{% if q %}{{ total }} results for “{{ q }}”{% elif flt.all %}{{ total }} objects{% else %}{{ total }} highlights{% endif %}{% if flt %} · filtered{% endif %}{% if shuffle %} · shuffled{% endif %}</p>
+
+<div class="grid">
+{% include "_cards.html" %}
+</div>
+{% if not cards and not error %}<p class="muted">{% if total %}{{ total }} matches, but none on this page have Open Access images{% if page < pages %}; loading more…{% endif %}.{% else %}No results.{% endif %}</p>{% endif %}
+<div id="sentinel" data-next="{{ page + 1 }}" data-qs="{{ qs }}" {{ 'hidden' if page >= pages }}>Loading more…</div>
+
+<noscript>{% if pages > 1 %}
+<div class="pager">
+  {% if page > 1 %}<a href="/?{{ qs }}&page={{ page - 1 }}">← Prev</a>{% endif %}
+  <span>Page {{ page }} of {{ pages }}</span>
+  {% if page < pages %}<a href="/?{{ qs }}&page={{ page + 1 }}">Next →</a>{% endif %}
+</div>
+{% endif %}</noscript>
+{% endblock %}

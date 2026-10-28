@@ -1,0 +1,10 @@
+{% macro tile(source, art_id, title, artist, thumb, note='', crop='') %}
+<div class="card">
+  <a href="/art/{{ source }}/{{ art_id }}{% if crop %}?crop={{ crop|urlencode }}{% endif %}"><img src="/img/{{ source }}/{{ art_id }}" alt="{{ title }}" loading="lazy"></a>
+  <div class="meta"><strong>{{ title }}</strong><span>{{ artist }}</span>{% if note %}<span class="muted">{{ note }}</span>{% endif %}</div>
+  <div class="actions">
+    <button class="primary" data-display="{{ source }}/{{ art_id }}"{% if crop %} data-crop="{{ crop }}"{% endif %}>Display</button>
+    <button data-fav="{{ source }}/{{ art_id }}">☆/★</button>
+  </div>
+</div>
+{% endmacro %}

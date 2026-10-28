@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% from "_rows.html" import tile %}
+{% block title %}Favorites · ArtBuff{% endblock %}
+{% block content %}
+<h1>Favorites</h1>
+<div class="grid">
+{% for r in rows %}{{ tile(r.source, r.art_id, r.title, r.artist, r.thumbnail_url) }}
+{% else %}<p>No favorites yet. Open an artwork and tap Favorite.</p>{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}TV · ArtBuff{% endblock %}
+{% block content %}
+<h1>TV</h1>
+{% if not ip %}
+  <p class="error">TV_IP isn't set. Copy <code>.env.example</code> to <code>.env</code>, set <code>TV_IP</code>, and restart.</p>
+{% else %}
+  <p>Target: <code>{{ ip }}:{{ port }}</code></p>
+  <p>Pairing: <strong>{{ 'paired ✓' if paired else 'not paired yet' }}</strong> <span class="muted">(token file: {{ token_file }})</span></p>
+  {% if not paired %}<p>Click below, then press <em>Allow</em> on the TV with your remote. This only happens once.</p>{% endif %}
+  <button class="primary" id="pair">{{ 'Re-test connection' if paired else 'Pair with TV' }}</button>
+{% endif %}
+{% endblock %}

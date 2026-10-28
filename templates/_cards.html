@@ -1,0 +1,9 @@
+{% set blank = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" %}
+{% for c in cards %}{% set a = c.art %}
+  <a class="card{{ '' if a else ' pending' }}" href="/art/{{ c.source }}/{{ c.id }}" data-source="{{ c.source }}" data-id="{{ c.id }}">
+    {% if a %}<img src="/img/{{ a.source }}/{{ a.id }}" data-src="/img/{{ a.source }}/{{ a.id }}" alt="{{ a.title }}" decoding="async">
+    <div class="meta"><strong>{{ '★ ' if (a.source, a.id) in favs }}{{ a.title }}</strong><span>{{ a.artist }}</span></div>
+    {% else %}<img src="{{ blank }}" alt="" decoding="async">
+    <div class="meta"><strong>&nbsp;</strong><span>&nbsp;</span></div>{% endif %}
+  </a>
+{% endfor %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% from "_rows.html" import tile %}
+{% block title %}History · ArtBuff{% endblock %}
+{% block content %}
+<h1>History</h1>
+<div class="grid">
+{% for r in rows %}{{ tile(r.source, r.art_id, r.title, r.artist, r.thumbnail_url, r.ts.replace('T', ' ')[:16] ~ ' UTC', r.crop) }}
+{% else %}<p>Nothing displayed yet.</p>{% endfor %}
+</div>
+{% endblock %}
