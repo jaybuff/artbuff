@@ -284,6 +284,40 @@ def api_display(source: str, art_id: str, crop: str | None = None):
     return {"ok": True}
 
 
+@app.post("/api/send-image")
+def api_send_image(payload: dict):
+    """'Send to Frame TV' from the browser: fetch an arbitrary image URL into the
+    library (as source 'web') and display it. Download and TV push report
+    separately: if the TV fails, the image is still saved and lands in history."""
+    url = str(payload.get("url") or "").strip()
+    title = str(payload.get("title") or "").strip() or None
+    page_url = str(payload.get("page_url") or "").strip() or None
+    if not url:
+        return JSONResponse({"ok": False, "error": "Missing 'url'."}, status_code=400)
+    provider = get_provider("web")
+    try:
+        art = provider.register(url, title=title, page_url=page_url)
+        raw, _ = provider.get_full_image(art.id)  # fetch + validate now, so errors surface here
+    except ValueError as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=400)
+    except httpx.HTTPError as e:
+        return JSONResponse({"ok": False, "error": f"Couldn't fetch that image: {e}"}, status_code=502)
+
+    def make_jpeg() -> bytes:
+        return prepare_for_tv(raw, config.LETTERBOX_COLOR, None)
+
+    try:
+        content_id = tv.display(make_jpeg, db.last_content_id("web", art.id, None), db.our_content_ids())
+    except tv.TVError as e:
+        db.add_history(art, None, None)  # saved and re-displayable, just not on the TV yet
+        return JSONResponse(
+            {"ok": False, "saved": True, "id": art.id, "error": f"Saved to ArtBuff, but the TV didn't take it: {e}"},
+            status_code=502,
+        )
+    db.add_history(art, content_id, None)
+    return {"ok": True, "id": art.id, "content_id": content_id}
+
+
 @app.post("/api/favorite/{source}/{art_id}")
 def api_favorite(source: str, art_id: str):
     provider = _provider_or_404(source)

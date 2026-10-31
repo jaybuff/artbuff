@@ -8,8 +8,9 @@ That's it: routes, history and favorites key on (provider.name, art id).
 """
 from .base import Artwork, Provider, SearchResult
 from .met import MetProvider
+from .web import WebProvider
 
-PROVIDERS: dict[str, Provider] = {p.name: p for p in [MetProvider()]}
+PROVIDERS: dict[str, Provider] = {p.name: p for p in [MetProvider(), WebProvider()]}
 DEFAULT_PROVIDER = "met"
 
 
