@@ -4,14 +4,18 @@ Browse public-domain art from museum collections and push it to a Samsung Frame 
 
 ## Install
 
-Needs Python 3.11+ (macOS system Python is 3.9, so use Homebrew's: `brew install python`).
+Needs Python 3.11+. [uv](https://docs.astral.sh/uv/) provides both the Python interpreter and the virtual environment — no Homebrew (or system Python) needed:
 
 ```sh
+curl -LsSf https://astral.sh/uv/install.sh | sh   # install uv (once)
 cd artbuff
-python3.13 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+uv python install 3.13        # fetch a standalone Python 3.13 (once)
+uv venv --python 3.13         # creates .venv
+uv pip install -r requirements.txt
 cp .env.example .env     # then edit TV_IP etc.
 ```
+
+To update dependencies later, re-run `uv pip install -r requirements.txt`.
 
 ## Find the TV's IP
 
