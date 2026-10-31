@@ -39,3 +39,7 @@ CACHE_DIR = _path(os.getenv("CACHE_DIR", "data/cache"))
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 CACHE_THUMBS_MB = int(os.getenv("CACHE_THUMBS_MB", "1024"))
 CACHE_FULL_MB = int(os.getenv("CACHE_FULL_MB", "2048"))
+
+# Images sent to /api/send-image. Not a cache: these are the only copies, and they're never evicted.
+UPLOADS_DIR = _path(os.getenv("UPLOADS_DIR", "data/uploads"))
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)

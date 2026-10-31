@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 
 import httpx
 import uvicorn
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -21,6 +21,7 @@ import frames
 from warmer import warmer
 from imaging import format_view, parse_view, prepare_for_tv
 from providers import DEFAULT_PROVIDER, PROVIDERS, get_provider
+from providers.upload import MAX_UPLOAD_BYTES
 
 PER_PAGE = 24
 log = logging.getLogger("artbuff")
@@ -146,7 +147,7 @@ def index(
             "flt": filters,
             "qs": qs,
             "source": source,
-            "providers": PROVIDERS.values(),
+            "providers": [p for p in PROVIDERS.values() if getattr(p, "browsable", True)],
             "cards": cards,
             "total": total,
             "page": page,
@@ -282,6 +283,48 @@ def api_display(source: str, art_id: str, crop: str | None = None):
     except (httpx.HTTPError, ValueError, OSError) as e:
         return JSONResponse({"ok": False, "error": f"Image fetch/processing failed: {e}"}, status_code=502)
     return {"ok": True}
+
+
+async def _read_upload(request: Request) -> bytes | None:
+    """The request body, or None once it passes MAX_UPLOAD_BYTES (so an oversized upload is never held in memory)."""
+    chunks, total = [], 0
+    async for chunk in request.stream():
+        total += len(chunk)
+        if total > MAX_UPLOAD_BYTES:
+            return None
+        chunks.append(chunk)
+    return b"".join(chunks)
+
+
+@app.post("/api/send-image")
+def api_send_image(title: str = "", data: bytes | None = Depends(_read_upload)):
+    """Save the image in the request body to the library and display it. If the TV fails, the
+    image stays saved and lands in history. `message` is meant to be shown to the person sending."""
+
+    def fail(status: int, message: str, **extra):
+        return JSONResponse({"ok": False, "message": message, **extra}, status_code=status)
+
+    if data is None:
+        return fail(413, f"That image is over {MAX_UPLOAD_BYTES // (1024 * 1024)} MB.")
+    if not data:
+        return fail(400, "No image was sent.")
+    provider = get_provider("upload")
+    try:
+        art = provider.save(data, title.strip() or None)
+    except ValueError as e:
+        return fail(400, str(e))
+    log.info("Upload %s: %d bytes", art.id, len(data))
+
+    def make_jpeg() -> bytes:
+        return prepare_for_tv(data, config.LETTERBOX_COLOR, None)
+
+    try:
+        content_id = tv.display(make_jpeg, db.last_content_id("upload", art.id, None), db.our_content_ids())
+    except tv.TVError as e:
+        db.add_history(art, None, None)
+        return fail(502, f"Saved to ArtBuff, but the TV didn't take it: {e}", saved=True, id=art.id)
+    db.add_history(art, content_id, None)
+    return {"ok": True, "message": "Sent to the Frame TV.", "id": art.id, "content_id": content_id}
 
 
 @app.post("/api/favorite/{source}/{art_id}")

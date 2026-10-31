@@ -42,6 +42,12 @@ Config is in `.env`: `TV_IP`, `TV_PORT` (8002), `TV_TOKEN_FILE`, `HOST`, `PORT` 
 
 Full-res image is downloaded, scaled to fit inside 3840×2160 (no stretching or cropping), centered on the letterbox color, saved as JPEG (quality 92, stepping down only if over 50 MB), uploaded with no matte, and selected. Art Mode is switched on first if needed. Re-displaying something already on the TV skips the upload.
 
+## Send images from your iPhone or iPad
+
+The **Send to Frame TV** Apple Shortcut sends an image from the share sheet to ArtBuff, which saves it and shows it on the TV. To set it up, see [docs/apple-shortcut.md](docs/apple-shortcut.md).
+
+Sent images appear in History and can be favorited and re-displayed. Originals are kept in `UPLOADS_DIR` (default `data/uploads`), which isn't a cache, so back it up rather than deleting it.
+
 ## Discovery (Met only)
 
 Shown only for providers that implement the optional `discovery()` / `related()` hooks (see `providers/base.py`); a new museum gets none of this unless it opts in.
