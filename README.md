@@ -12,14 +12,14 @@ cd artbuff
 uv python install 3.13        # fetch a standalone Python 3.13 (once)
 uv venv --python 3.13         # creates .venv
 uv pip install -r requirements.txt
-cp .env.example .env     # then edit TV_IP etc.
+cp .env.example .env     # optional settings
 ```
 
 To update dependencies later, re-run `uv pip install -r requirements.txt`.
 
 ## Find the TV's IP
 
-TV: Settings → General → Network → Network Status → IP Settings. Or check your router's device list. Give the TV a DHCP reservation so the address doesn't change, then set `TV_IP` in `.env`.
+TV: Settings → General → Network → Network Status → IP Settings. Or check your router's device list. Give the TV a DHCP reservation so the address doesn't change. ArtBuff opens on its **TV** page until you enter the address, and you can change it there later. It's saved beside `TV_TOKEN_FILE`.
 
 ## First-run pairing
 
@@ -36,7 +36,14 @@ TV: Settings → General → Network → Network Status → IP Settings. Or chec
 
 Open http://localhost:8420. From another device on your LAN use `http://<mac-ip-or-hostname>.local:8420` (the server binds `0.0.0.0`; allow incoming connections if macOS asks). There's no auth, so keep this on your home network. Don't forward the port.
 
-Config is in `.env`: `TV_IP`, `TV_PORT` (8002), `TV_TOKEN_FILE`, `HOST`, `PORT` (8420), `LETTERBOX_COLOR` (`black`, or e.g. `#f5f1e8`), `MAX_TV_UPLOADS` (20; oldest ArtBuff uploads are deleted from the TV past this; other art is never touched).
+Config is in `.env`: `TV_PORT` (8002), `TV_TOKEN_FILE`, `HOST`, `PORT` (8420), `LETTERBOX_COLOR` (`black`, or e.g. `#f5f1e8`), `MAX_TV_UPLOADS` (20; oldest ArtBuff uploads are deleted from the TV past this; other art is never touched).
+
+## Waking the TV
+
+ArtBuff wakes the TV with Wake-on-LAN when you pair or display something while it's off, waiting up to 30 seconds for it to come up. It learns the TV's MAC address from the TV at startup and whenever the TV responds, and saves it beside `TV_TOKEN_FILE`, so the TV must be on at least once while ArtBuff is running. This only works when the TV is on Wi-Fi, because the TV's API reports a `wifiMac`, which isn't the right address for a wired connection. To set it up:
+
+1. Turn on **Power On with Mobile** on the TV, under Settings → All Settings → Connection → Network → Expert Settings. The path varies by model year.
+2. Run ArtBuff on the same network segment as the TV, since the wake packet is a local broadcast.
 
 ## How display works
 

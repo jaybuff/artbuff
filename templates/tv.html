@@ -3,8 +3,19 @@
 {% block content %}
 <h1>TV</h1>
 {% if not ip %}
-  <p class="error">TV_IP isn't set. Copy <code>.env.example</code> to <code>.env</code>, set <code>TV_IP</code>, and restart.</p>
-{% else %}
+  <p>To get started, enter your Frame TV's IP address. To find it, use either of these:</p>
+  <ul>
+    <li>On the TV, go to Settings → All Settings → Connection → Network → Network Status → IP Settings. On some models, this is under General instead of Connection.</li>
+    <li>Look for the TV in your router's device list.</li>
+  </ul>
+  <p class="muted">If your router supports it, give the TV a DHCP reservation so its address doesn't change.</p>
+{% endif %}
+<form id="tv-ip-form" class="ip-form">
+  <label for="tv-ip">TV IP address</label>
+  <input type="text" id="tv-ip" name="ip" value="{{ ip or '' }}" placeholder="192.168.1.50" autocomplete="off" required>
+  <button class="primary">Save</button>
+</form>
+{% if ip %}
   <p>Target: <code>{{ ip }}:{{ port }}</code></p>
   <p>Pairing: <strong>{{ 'paired ✓' if paired else 'not paired yet' }}</strong> <span class="muted">(token file: {{ token_file }})</span></p>
   {% if not paired %}<p>Click below, then press <em>Allow</em> on the TV with your remote. This only happens once.</p>{% endif %}

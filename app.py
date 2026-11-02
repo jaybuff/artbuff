@@ -3,6 +3,7 @@ import logging
 import logging.handlers
 import math
 import random
+import threading
 from types import SimpleNamespace
 from urllib.parse import urlencode
 from contextlib import asynccontextmanager
@@ -10,7 +11,7 @@ from contextlib import asynccontextmanager
 import httpx
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -49,6 +50,7 @@ setup_logging()
 async def lifespan(_: FastAPI):
     db.init()
     warmer.start()
+    threading.Thread(target=tv.learn_mac, daemon=True).start()  # a TV that's off shouldn't hold up startup
     yield
 
 
@@ -115,6 +117,8 @@ def _provider_or_404(source: str):
 def index(
     request: Request, q: str = "", page: int = 1, source: str = DEFAULT_PROVIDER, partial: int = 0, shuffle: str = ""
 ):
+    if not tv.ip():  # first run: nothing can reach the TV until this is set
+        return RedirectResponse("/tv", status_code=303)
     provider = _provider_or_404(source)
     page = max(page, 1)
     disc = provider.discovery() if hasattr(provider, "discovery") else None
@@ -249,8 +253,17 @@ def tv_page(request: Request):
     return templates.TemplateResponse(
         request,
         "tv.html",
-        {"ip": config.TV_IP, "port": config.TV_PORT, "paired": tv.is_paired(), "token_file": config.TV_TOKEN_FILE},
+        {"ip": tv.ip(), "port": config.TV_PORT, "paired": tv.is_paired(), "token_file": config.TV_TOKEN_FILE},
     )
+
+
+@app.post("/api/tv-ip")
+def api_tv_ip(ip: str = ""):
+    try:
+        tv.set_ip(ip)
+    except ValueError as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=400)
+    return {"ok": True}
 
 
 @app.post("/api/pair")

@@ -12,7 +12,6 @@ def _path(value: str) -> Path:
     return p if p.is_absolute() else BASE_DIR / p
 
 
-TV_IP = os.getenv("TV_IP", "").strip()
 TV_PORT = int(os.getenv("TV_PORT", "8002"))
 TV_TOKEN_FILE = _path(os.getenv("TV_TOKEN_FILE", "data/tv-token.txt"))
 
@@ -25,6 +24,8 @@ MAX_TV_UPLOADS = int(os.getenv("MAX_TV_UPLOADS", "20"))
 DB_PATH = _path(os.getenv("DB_PATH", "data/artbuff.db"))
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 TV_TOKEN_FILE.parent.mkdir(parents=True, exist_ok=True)
+TV_IP_FILE = TV_TOKEN_FILE.with_name("tv-ip.txt")  # entered on the TV page
+TV_MAC_FILE = TV_TOKEN_FILE.with_name("tv-mac.txt")  # learned from the TV, so it can be woken after a restart
 
 # Hard ceiling on outbound requests/second to the Met (their stated limit is 80; we clamp to it).
 MET_MAX_RPS = min(int(os.getenv("MET_MAX_RPS", "10")), 80)

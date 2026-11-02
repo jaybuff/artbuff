@@ -43,6 +43,16 @@ document.addEventListener('click', async (e) => {
   }
 });
 
+document.getElementById('tv-ip-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    await post('/api/tv-ip?ip=' + encodeURIComponent(e.target.elements.ip.value));
+    location.reload();
+  } catch (err) {
+    say(err.message, true);
+  }
+});
+
 // Framing editor on the detail page. The artwork sits in the frame's opening and is dragged/zoomed
 // behind the frame overlay. Same math as imaging.prepare_for_tv: (cx, cy) = image point at the
 // opening's center, zoom relative to "cover" (1 fills the opening; below 1 shows the whole image).

@@ -9,7 +9,8 @@ main { padding:1.2rem; max-width:1400px; margin:0 auto; }
 .muted { color:var(--muted); }
 .error { color:#f66; }
 .search { display:flex; gap:.5rem; margin-bottom:1rem; }
-input[type=search], select { flex:1; padding:.6rem .8rem; background:var(--card); color:var(--fg); border:1px solid #333; border-radius:6px; font-size:1rem; }
+.ip-form { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; max-width:32rem; margin:1rem 0; }
+input[type=search], input[type=text], select { flex:1; padding:.6rem .8rem; background:var(--card); color:var(--fg); border:1px solid #333; border-radius:6px; font-size:1rem; }
 select { flex:none; }
 button { padding:.55rem 1rem; border-radius:6px; border:1px solid #444; background:var(--card); color:var(--fg); cursor:pointer; font-size:.95rem; }
 button.primary { background:var(--accent); color:#111; border-color:var(--accent); font-weight:600; }
